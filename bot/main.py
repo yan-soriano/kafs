@@ -1,24 +1,42 @@
 import asyncio
-import logging
-from aiogram import Bot, Dispatcher
-from bot.handlers import start, tiktok, video
-from dotenv import load_dotenv
 import os
+import uvicorn
+from aiogram import Bot, Dispatcher
+from aiogram.fsm.storage.memory import MemoryStorage
+from dotenv import load_dotenv
+from db.models import init_db
+from bot.handlers import start, tiktok, video
+from scheduler.tasks import start_scheduler
+from api.main import app as fastapi_app
 
 load_dotenv()
 
-async def main():
-    logging.basicConfig(level=logging.INFO)
-    
-    bot = Bot(token=os.getenv("BOT_TOKEN"))
-    dp = Dispatcher()
+bot = Bot(token=os.getenv("TELEGRAM_BOT_TOKEN"))
+dp = Dispatcher(storage=MemoryStorage())
 
-    # Register routers
+
+async def main():
+    # Инициализируем БД
+    await init_db()
+
+    # Подключаем хэндлеры
     dp.include_router(start.router)
     dp.include_router(tiktok.router)
     dp.include_router(video.router)
 
-    await dp.start_polling(bot)
+    # Запускаем планировщик
+    start_scheduler()
+
+    # Запускаем FastAPI в фоне
+    config = uvicorn.Config(fastapi_app, host="0.0.0.0", port=8000)
+    server = uvicorn.Server(config)
+    
+    # Запускаем бота и сервер одновременно
+    await asyncio.gather(
+        dp.start_polling(bot),
+        server.serve()
+    )
+
 
 if __name__ == "__main__":
     asyncio.run(main())
