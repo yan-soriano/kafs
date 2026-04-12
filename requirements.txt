@@ -1,0 +1,11 @@
+aiogram
+fastapi
+uvicorn
+sqlalchemy[asyncio]
+asyncpg
+celery
+redis
+python-dotenv
+pydantic
+pydantic-settings
+aiohttp
