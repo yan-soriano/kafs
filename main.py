@@ -28,7 +28,11 @@ async def main():
     start_scheduler()
 
     # Запускаем FastAPI в фоне
-    config = uvicorn.Config(fastapi_app, host="0.0.0.0", port=8000)
+    config = uvicorn.Config(
+        fastapi_app, 
+        host="0.0.0.0", 
+        port=int(os.getenv("PORT", 8000))
+    )
     server = uvicorn.Server(config)
     
     # Запускаем бота и сервер одновременно
