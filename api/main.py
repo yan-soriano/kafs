@@ -1,6 +1,7 @@
 import os
 import httpx
 from fastapi import FastAPI
+from fastapi.responses import FileResponse
 from dotenv import load_dotenv
 from db.models import async_session, User
 from sqlalchemy import select
@@ -74,3 +75,8 @@ async def oauth_callback(code: str, state: str):
         await session.commit()
 
     return {"message": f"✅ TikTok аккаунт @{username} успешно подключён! Вернись в бот."}
+
+
+@app.get("/tiktokK5JT9X2Yn13L9cVddSr2DDmwEET8DWGe.txt")
+async def tiktok_verify():
+    return FileResponse("tiktokK5JT9X2Yn13L9cVddSr2DDmwEET8DWGe.txt")
