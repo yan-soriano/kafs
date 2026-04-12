@@ -83,6 +83,7 @@ async def post_video(video_id: int):
 async def check_scheduled_videos():
     """Проверяем каждую минуту — не пора ли постить"""
     now = datetime.utcnow()
+    print(f"🕐 Проверка очереди: {now}")
 
     async with async_session() as session:
         result = await session.execute(
@@ -93,7 +94,10 @@ async def check_scheduled_videos():
         )
         videos = result.scalars().all()
 
+    print(f"📋 Найдено видео для постинга: {len(videos)}")
+
     for video in videos:
+        print(f"📤 Постим видео {video.id}...")
         await post_video(video.id)
 
 

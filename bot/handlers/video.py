@@ -4,7 +4,7 @@ from aiogram.filters import Command
 from aiogram.types import Message
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import State, StatesGroup
-from datetime import datetime
+from datetime import datetime, timedelta
 from db.models import async_session, Video
 
 router = Router()
@@ -46,7 +46,10 @@ async def handle_video(message: Message, state: FSMContext):
 @router.message(VideoUpload.waiting_for_time)
 async def handle_time(message: Message, state: FSMContext):
     try:
-        scheduled_at = datetime.strptime(message.text, "%d.%m.%Y %H:%M")
+        # Пользователь вводит время по UTC+5 (Алматы)
+        local_time = datetime.strptime(message.text, "%d.%m.%Y %H:%M")
+        # Конвертируем в UTC для хранения
+        scheduled_at = local_time - timedelta(hours=5)
     except ValueError:
         await message.answer(
             "❌ Неверный формат! Попробуй так:\n"
