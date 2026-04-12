@@ -79,4 +79,6 @@ async def oauth_callback(code: str, state: str):
 
 @app.get("/tiktokK5JT9X2Yn13L9cVddSr2DDmwEET8DWGe.txt")
 async def tiktok_verify():
-    return FileResponse("tiktokK5JT9X2Yn13L9cVddSr2DDmwEET8DWGe.txt")
+    base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    file_path = os.path.join(base_dir, "tiktokK5JT9X2Yn13L9cVddSr2DDmwEET8DWGe.txt")
+    return FileResponse(file_path)
