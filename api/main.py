@@ -83,6 +83,11 @@ async def tiktok_verify():
     return FileResponse("/app/tiktokK5JT9X2Yn13L9cVddSr2DDmwEET8DWGe.txt")
 
 
+@app.get("/tiktok4vWAuwBnEdeLR4ZKOocWBktNlQbcUuvN.txt")
+async def tiktok_verify2():
+    return FileResponse("/app/tiktok4vWAuwBnEdeLR4ZKOocWBktNlQbcUuvN.txt")
+
+
 @app.get("/debug")
 async def debug():
     base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
