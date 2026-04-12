@@ -93,3 +93,11 @@ async def debug():
     base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     files = glob.glob(f"{base_dir}/**/*tiktok*", recursive=True)
     return {"base_dir": base_dir, "files": files}
+
+
+@app.get("/debug-env")
+async def debug_env():
+    return {
+        "client_key": CLIENT_KEY,
+        "redirect_uri": REDIRECT_URI
+    }
