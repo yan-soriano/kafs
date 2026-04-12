@@ -1,5 +1,6 @@
 import os
 import httpx
+import glob
 from fastapi import FastAPI
 from fastapi.responses import FileResponse
 from dotenv import load_dotenv
@@ -82,3 +83,10 @@ async def tiktok_verify():
     base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     file_path = os.path.join(base_dir, "tiktokK5JT9X2Yn13L9cVddSr2DDmwEET8DWGe.txt")
     return FileResponse(file_path)
+
+
+@app.get("/debug")
+async def debug():
+    base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    files = glob.glob(f"{base_dir}/**/*tiktok*", recursive=True)
+    return {"base_dir": base_dir, "files": files}
