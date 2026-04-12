@@ -101,3 +101,20 @@ async def debug_env():
         "client_key": CLIENT_KEY,
         "redirect_uri": REDIRECT_URI
     }
+
+
+@app.get("/debug-queue")
+async def debug_queue():
+    from db.models import Video
+    async with async_session() as session:
+        result = await session.execute(select(Video))
+        videos = result.scalars().all()
+    return [
+        {
+            "id": v.id,
+            "scheduled_at": str(v.scheduled_at),
+            "posted": v.posted,
+            "user_id": v.user_id
+        }
+        for v in videos
+    ]
