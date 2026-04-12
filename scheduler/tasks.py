@@ -29,6 +29,24 @@ async def post_video(video_id: int):
             print(f"❌ Нет токена для пользователя {video.user_id}")
             return
 
+    # Скачиваем файл из Telegram по file_id
+    bot_token = os.getenv("TELEGRAM_BOT_TOKEN")
+    async with httpx.AsyncClient() as client:
+        # Получаем file_path
+        file_info = await client.get(
+            f"https://api.telegram.org/bot{bot_token}/getFile",
+            params={"file_id": video.file_url}
+        )
+        file_data = file_info.json()
+        file_path = file_data["result"]["file_path"]
+        
+        # Скачиваем файл
+        file_response = await client.get(
+            f"https://api.telegram.org/file/bot{bot_token}/{file_path}"
+        )
+        video_bytes = file_response.content
+        video_size = len(video_bytes)
+
     async with httpx.AsyncClient() as client:
         # Шаг 1 — получаем инфо о креаторе
         creator_response = await client.post(
@@ -42,7 +60,7 @@ async def post_video(video_id: int):
         privacy_options = creator_data.get("data", {}).get("privacy_level_options", ["SELF_ONLY"])
         privacy_level = "PUBLIC_TO_EVERYONE" if "PUBLIC_TO_EVERYONE" in privacy_options else privacy_options[0]
 
-        # Шаг 2 — инициируем постинг
+        # Шаг 2 — инициируем FILE_UPLOAD
         post_response = await client.post(
             "https://open.tiktokapis.com/v2/post/publish/video/init/",
             headers={
@@ -58,26 +76,43 @@ async def post_video(video_id: int):
                     "disable_stitch": False,
                 },
                 "source_info": {
-                    "source": "PULL_FROM_URL",
-                    "video_url": video.file_url
+                    "source": "FILE_UPLOAD",
+                    "video_size": video_size,
+                    "chunk_size": video_size,
+                    "total_chunk_count": 1
                 }
             }
         )
         post_data = post_response.json()
+        print(f"📝 Init response: {post_data}")
 
-    if post_data.get("error", {}).get("code") == "ok":
-        # Помечаем как опубликованное
-        async with async_session() as session:
-            result = await session.execute(
-                select(Video).where(Video.id == video_id)
-            )
-            video = result.scalar_one_or_none()
-            if video:
-                video.posted = True
-                await session.commit()
-        print(f"✅ Видео {video_id} опубликовано!")
-    else:
-        print(f"❌ Ошибка постинга видео {video_id}: {post_data}")
+        if post_data.get("error", {}).get("code") != "ok":
+            print(f"❌ Ошибка init: {post_data}")
+            return
+
+        upload_url = post_data["data"]["upload_url"]
+
+        # Шаг 3 — загружаем файл
+        upload_response = await client.put(
+            upload_url,
+            headers={
+                "Content-Range": f"bytes 0-{video_size-1}/{video_size}",
+                "Content-Type": "video/mp4"
+            },
+            content=video_bytes
+        )
+        print(f"📤 Upload response: {upload_response.status_code}")
+
+    # Помечаем как опубликованное
+    async with async_session() as session:
+        result = await session.execute(
+            select(Video).where(Video.id == video_id)
+        )
+        video = result.scalar_one_or_none()
+        if video:
+            video.posted = True
+            await session.commit()
+    print(f"✅ Видео {video_id} опубликовано!")
 
 
 async def check_scheduled_videos():
