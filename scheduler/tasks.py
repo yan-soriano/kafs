@@ -63,6 +63,7 @@ async def post_video(video_id: int):
             }
         )
         creator_data = creator_response.json()
+        print(f"👤 Creator info: {creator_data}")
         privacy_options = creator_data.get("data", {}).get("privacy_level_options", ["SELF_ONLY"])
         privacy_level = "PUBLIC_TO_EVERYONE" if "PUBLIC_TO_EVERYONE" in privacy_options else privacy_options[0]
 
