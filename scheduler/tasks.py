@@ -38,6 +38,12 @@ async def post_video(video_id: int):
             params={"file_id": video.file_url}
         )
         file_data = file_info.json()
+        print(f"📁 File info: {file_data}")
+
+        if not file_data.get("ok"):
+            print(f"❌ Telegram не нашёл файл: {file_data}")
+            return
+
         file_path = file_data["result"]["file_path"]
         
         # Скачиваем файл
