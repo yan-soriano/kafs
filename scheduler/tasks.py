@@ -64,8 +64,8 @@ async def post_video(video_id: int):
         )
         creator_data = creator_response.json()
         print(f"👤 Creator info: {creator_data}")
-        privacy_options = creator_data.get("data", {}).get("privacy_level_options", ["SELF_ONLY"])
-        privacy_level = "PUBLIC_TO_EVERYONE" if "PUBLIC_TO_EVERYONE" in privacy_options else privacy_options[0]
+        # Принудительно ставим SELF_ONLY пока приложение не прошло аудит
+        privacy_level = "SELF_ONLY"
 
         # Шаг 2 — инициируем FILE_UPLOAD
         post_response = await client.post(
